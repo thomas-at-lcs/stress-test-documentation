@@ -1,0 +1,137 @@
+# cobud
+
+The goal of cobud is to make it easy to forecast Colorado’s General Fund
+budget. It includes historical budget data and example assumptions about
+future revenue, spending, and TABOR-related calculations. Custom
+assumptions can be supplied at varying levels of detail, from a single
+total appropriations figure to department-level detail, and can
+optionally draw on outside revenue and spending forecasts. Historical
+data, forecasts, and assumption templates are maintained by the Colorado
+Legislative Council Staff (LCS) economics team.
+
+## Installation
+
+Instalation instructions are coming soon.
+
+``` r
+
+# example install
+```
+
+## Example
+
+To view historical budget data on Colorado’s General Fund, use the
+`cobud_history` data frame.
+
+``` r
+
+library(cobud)
+library(dplyr)
+
+# view historical budget data
+cobud_history |> select(
+  year,
+  gf_start_balance,
+  total_revenue,
+  total_expenditures,
+  gf_end_balance
+)
+#>     year gf_start_balance total_revenue total_expenditures gf_end_balance
+#> 1  15-16               NA        9971.4            10189.7          512.7
+#> 2  16-17            512.7       10275.8            10424.7          614.5
+#> 3  17-18            614.5       11723.9            11215.4         1366.0
+#> 4  18-19           1366.0       12564.6            12857.3         1262.6
+#> 5  19-20           1262.6       12868.0            12778.9         1825.7
+#> 6  20-21           1825.7       14310.1            13327.1         3181.5
+#> 7  21-22           3181.5       17697.9            17838.7         3203.2
+#> 8  22-23           3203.2       17998.0            19027.2         2427.4
+#> 9  23-24           2427.4       17251.4            16870.8         3153.5
+#> 10 24-25           3153.5       17181.3            18572.8         2408.4
+#> 11 25-26           2408.4       16870.3            18062.7         2045.8
+```
+
+To forecast future years, load a parameter template, customize it, and
+feed that into [`cobud_forecast()`](reference/cobud_forecast.md).
+
+``` r
+
+# load a parameter template
+# and print the default assumption for inflation_pct
+custom_params = very_simple_param_template
+print(custom_params[["26-27"]][["inflation_pct"]])
+#> $method
+#> [1] "LCS forecast"
+```
+
+``` r
+
+# edit that assumption
+custom_params[["26-27"]][["inflation_pct"]] = list(
+  method = "Custom", 
+  value = 0.042
+)
+
+# run a forecast using default data and custom assumptions
+custom_forecast = cobud_forecast(
+  params = custom_params,
+  historical_data = cobud_history,
+  revenue_forecast = cobud_revenue_forecast,
+  spending_forecast = cobud_spending_forecast
+)
+#> inputs validated
+#> preparing tax credit triggers...
+#>    for 25-26 ...
+#>    for 26-27 ...
+#> calculating 25-26 budget...
+#>    using very simple appropriations...
+#> calculating 26-27 budget...
+#>    using very simple appropriations...
+#> budget calculation successful
+#> outputs validated
+```
+
+``` r
+
+# preview the resulting forecast
+custom_forecast |>
+  select(
+    year,
+    gf_start_balance,
+    total_revenue,
+    total_expenditures,
+    gf_end_balance
+  ) |>
+  tail()
+#>     year gf_start_balance total_revenue total_expenditures gf_end_balance
+#> 7  21-22         3181.500      17697.90           17838.70       3203.200
+#> 8  22-23         3203.200      17998.00           19027.20       2427.400
+#> 9  23-24         2427.400      17251.40           16870.80       3153.500
+#> 10 24-25         3153.500      17181.30           18572.80       2408.400
+#> 11 25-26         2408.400      16870.30           18062.70       2045.795
+#> 12 26-27         2045.795      18038.48           18811.67       1327.014
+```
+
+# Package index
+
+## All functions
+
+- [`cobud_field_metadata`](cobud_field_metadata.md) : Metadata for each
+  field in the Colorado budget
+- [`cobud_forecast()`](cobud_forecast.md) : Forecast Colorado's General
+  Fund budget
+- [`cobud_history`](cobud_history.md) : A 10-year history of Colorado's
+  budget
+- [`cobud_revenue_forecast`](cobud_revenue_forecast.md) : A revenue
+  forecast for Colorado's budget
+- [`cobud_spending_forecast`](cobud_spending_forecast.md) : An
+  expenditure forecast for Colorado's budget
+- [`detailed_param_template`](param_templates.md)
+  [`simple_param_template`](param_templates.md)
+  [`very_simple_param_template`](param_templates.md) : Param templates
+
+# Articles
+
+### All vignettes
+
+- [Budget Fields](budget-fields.md):
+- [Introduction to cobud](cobud.md):
